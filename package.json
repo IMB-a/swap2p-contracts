@@ -1,4 +1,14 @@
 {
+  "scripts": {
+    "coverage": "hardhat coverage",
+    "deploy:bsc_testnet": "hardhat deploy --network bsc_testnet",
+    "deploy:local": "hardhat deploy --network localhost",
+    "deploy:mainnet": "hardhat deploy --network mainnet",
+    "deploy:rinkeby": "hardhat deploy --network rinkeby",
+    "lint": "echo \"\ncheck js files \n\"; npx prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx}\"; echo \"\ncheck sol files \n\"; npx prettier --write \"contracts/*.sol\"",
+    "lint:check": "echo \"\ncheck js files \n\"; npx prettier --check \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx}\"; echo \"\ncheck sol files \n\"; npx prettier --check \"contracts/*.sol\"",
+    "test": "hardhat test"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",

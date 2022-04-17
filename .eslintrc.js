@@ -1,4 +1,7 @@
 module.exports = {
+  rules: {
+    "max-len": ["error", { code: 120 }],
+  },
   env: {
     browser: false,
     es2021: true,
