@@ -7,7 +7,8 @@
     "deploy:rinkeby": "hardhat deploy --network rinkeby",
     "lint": "echo \"\ncheck js files \n\"; npx prettier --write \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx}\"; echo \"\ncheck sol files \n\"; npx prettier --write \"contracts/*.sol\"",
     "lint:check": "echo \"\ncheck js files \n\"; npx prettier --check \"{,!(node_modules)/**/}*.{ts,tsx,js,jsx}\"; echo \"\ncheck sol files \n\"; npx prettier --check \"contracts/*.sol\"",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "verify:rinkeby": "hardhat etherscan-verify --network rinkeby --api-key $ETHERSCAN_API_KEY"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
@@ -26,6 +27,8 @@
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.4",
     "hardhat": "^2.9.3",
+    "hardhat-deploy": "^0.11.4",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier": "^2.6.2",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
