@@ -75,9 +75,12 @@ contract Swap2p {
     function cancelEscrow(uint256 _escrowIndex) external {
         require(
             escrowList[_escrowIndex].xOwner == msg.sender,
-            "invoker isn't escrow owner"
+            "you'r isn't escrow owner"
         );
-        require(escrowList[_escrowIndex].closed == false, "escrow already closed");
+        require(
+            escrowList[_escrowIndex].closed == false,
+            "escrow already closed"
+        );
 
         escrowList[_escrowIndex].closed = true;
         emit EscrowCanceled(_escrowIndex);
@@ -87,6 +90,11 @@ contract Swap2p {
         IERC20 xToken = IERC20(escrowList[_escrowIndex].xTokenContractAddr);
         IERC20 yToken = IERC20(escrowList[_escrowIndex].yTokenContractAddr);
         require(escrowList[_escrowIndex].closed == false, "escrow closed");
+        require(
+            escrowList[_escrowIndex].yOwner == address(0) ||
+                escrowList[_escrowIndex].yOwner == msg.sender,
+            "escrow not for you"
+        );
         require(
             yToken.balanceOf(msg.sender) > escrowList[_escrowIndex].yAmount,
             "not enought yToken"
@@ -106,5 +114,19 @@ contract Swap2p {
         );
 
         emit EscrowAccepted(_escrowIndex);
+    }
+
+    function getEscrow(uint256 _escrowIndex)
+        public
+        view
+        returns (Escrow memory)
+    {
+        require(escrowList.length > 0, "no escrows");
+        require(
+            _escrowIndex < escrowList.length,
+            "Id must be < escrows length"
+        );
+
+        return escrowList[_escrowIndex];
     }
 }
