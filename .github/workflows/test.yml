@@ -3,8 +3,8 @@ name: Test
 on: [push]
 
 jobs:
-  build-and-pr:
-    name: "Build and PR"
+  lint:
+    name: "lint"
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
@@ -15,5 +15,30 @@ jobs:
         run: "npm install"
       - name: Run hardhat tests
         run: "npm run-script test"
-      - name: Run lint checks
-        run: "npm run-script lint"
+  
+  hardhat-test:
+    name: "tests"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+      - name: Install dependencies
+        run: "npm install"
+      - name: Run hardhat tests
+        run: "npm run-script test"
+
+  hardhat-coverage:
+    name: "coverage"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.x"
+      - name: Install dependencies
+        run: "npm install"
+      - name: Run hardhat coverage
+        run: "npm run-script coverage"
+
