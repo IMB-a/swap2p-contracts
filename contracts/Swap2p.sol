@@ -14,7 +14,7 @@ contract Swap2p {
         bool closed;
     }
 
-    Escrow[] public escrowsList;
+    Escrow[] public escrowList;
 
     mapping(address => uint256[]) public ownerTokens;
 
@@ -46,7 +46,7 @@ contract Swap2p {
         IERC20 xToken = IERC20(_xTokenContractAddr);
         require(xToken.balanceOf(msg.sender) > _xAmount, "not enought xToken");
 
-        escrowsList.push(
+        escrowList.push(
             Escrow({
                 xOwner: msg.sender,
                 xTokenContractAddr: _xTokenContractAddr,
@@ -57,7 +57,7 @@ contract Swap2p {
                 closed: false
             })
         );
-        uint256 escrowIndex = escrowsList.length - 1;
+        uint256 escrowIndex = escrowList.length - 1;
 
         xToken.transferFrom(msg.sender, address(this), _xAmount);
 
@@ -74,35 +74,35 @@ contract Swap2p {
 
     function cancelEscrow(uint256 _escrowIndex) external {
         require(
-            escrowsList[_escrowIndex].xOwner == msg.sender,
+            escrowList[_escrowIndex].xOwner == msg.sender,
             "invoker isn't escrow owner"
         );
-        require(escrowsList[_escrowIndex].closed == false, "escrow already closed");
+        require(escrowList[_escrowIndex].closed == false, "escrow already closed");
 
-        escrowsList[_escrowIndex].closed = true;
+        escrowList[_escrowIndex].closed = true;
         emit EscrowCanceled(_escrowIndex);
     }
 
     function acceptEscrow(uint256 _escrowIndex) external {
-        IERC20 xToken = IERC20(escrowsList[_escrowIndex].xTokenContractAddr);
-        IERC20 yToken = IERC20(escrowsList[_escrowIndex].yTokenContractAddr);
-        require(escrowsList[_escrowIndex].closed == false, "escrow closed");
+        IERC20 xToken = IERC20(escrowList[_escrowIndex].xTokenContractAddr);
+        IERC20 yToken = IERC20(escrowList[_escrowIndex].yTokenContractAddr);
+        require(escrowList[_escrowIndex].closed == false, "escrow closed");
         require(
-            yToken.balanceOf(msg.sender) > escrowsList[_escrowIndex].yAmount,
+            yToken.balanceOf(msg.sender) > escrowList[_escrowIndex].yAmount,
             "not enought yToken"
         );
 
-        escrowsList[_escrowIndex].closed = true;
+        escrowList[_escrowIndex].closed = true;
 
-        xToken.transfer(msg.sender, escrowsList[_escrowIndex].xAmount);
+        xToken.transfer(msg.sender, escrowList[_escrowIndex].xAmount);
         yToken.transferFrom(
             msg.sender,
             address(this),
-            escrowsList[_escrowIndex].yAmount
+            escrowList[_escrowIndex].yAmount
         );
         yToken.transfer(
-            escrowsList[_escrowIndex].xOwner,
-            escrowsList[_escrowIndex].yAmount
+            escrowList[_escrowIndex].xOwner,
+            escrowList[_escrowIndex].yAmount
         );
 
         emit EscrowAccepted(_escrowIndex);
