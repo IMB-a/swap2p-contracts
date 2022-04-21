@@ -38,7 +38,7 @@ task("escrow", "escrow TokenX TokenY").setAction(async (_, hre) => {
       100,
       TokenY,
       200,
-      "0xA3c45c542ceF281842e4956D0f70F398cC9d2798",
+      tokenYDeployer,
       {
         from: tokenXDeployer,
       }
@@ -56,6 +56,7 @@ task("escrow", "escrow TokenX TokenY").setAction(async (_, hre) => {
   await (
     await Swap2pInstance.acceptEscrow(0, {
       from: tokenYDeployer,
+      gasLimit: 250000
     })
   ).wait();
 });
