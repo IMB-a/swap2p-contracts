@@ -1,42 +1,33 @@
-# Advanced Sample Hardhat Project
+# Swap2p
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+![](https://img.shields.io/badge/build%20with-openzeppelin-blue.svg?style=flat-square)
+[![Test](https://github.com/Pod-Box/swap2p-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/Pod-Box/swap2p-contracts/actions/workflows/test.yml)
+![Solidity](https://img.shields.io/badge/solidity-v0.8.13-green)
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+Escrow, which allows you to securely exchange erc-20 tokens. Using it you can open position, that can be fulfilled by any other person, or a specific one.
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.js
-node scripts/deploy.js
-npx eslint '**/*.js'
-npx eslint '**/*.js' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+## Install
+```bash
+npm install
 ```
 
-# Etherscan verification
-
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/deploy.js
+## Deploy
+```bash
+npm run-script deploy:rinkeby
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+## Verify
+```bash
+npm run-script verify:rinkeby
+```
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+## Test
+```bash
+npm run-script test
+npm run-script coverage
+```
+
+# Using example
+```bash
+npx hardhat escrow --network rinkeby
 ```
