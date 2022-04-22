@@ -30,7 +30,7 @@ contract Swap2p is AccessControl {
         uint256 escrowIndex
     );
 
-    event EscrowAccepted(uint256 escrowIndex);
+    event EscrowAccepted(uint256 escrowIndex, address yOwner);
     event EscrowCanceled(uint256 escrowIndex);
 
     constructor(uint256 _fee) {
@@ -121,7 +121,7 @@ contract Swap2p is AccessControl {
             escrowList[_escrowIndex].yAmount
         );
 
-        emit EscrowAccepted(_escrowIndex);
+        emit EscrowAccepted(_escrowIndex, msg.sender);
     }
 
     function setFee(uint256 _newFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
