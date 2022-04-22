@@ -15,7 +15,8 @@ describe("Swap2p", function () {
   });
 
   beforeEach(async function () {
-    this.swap2p = await this.Swap2pArtifact.deploy();
+    this.swap2pFee = ethers.BigNumber.from(1);
+    this.swap2p = await this.Swap2pArtifact.deploy(this.swap2pFee);
     this.tokenX = await this.tokenXArtifact.deploy();
     this.tokenY = await this.tokenYArtifact.deploy();
   });
@@ -48,6 +49,62 @@ describe("Swap2p", function () {
           .approve(this.swap2p.address, this.firstEscrowTokenXAmount);
       });
 
+      describe("change fee", function () {
+        beforeEach(async function () {
+          this.swap2pNewFee = this.swap2pFee.mul(ethers.BigNumber.from(2));
+          await this.swap2p.connect(this.deployer).setFee(this.swap2pNewFee);
+        });
+
+        it("revert then createEscrow with old fee", async function () {
+          await expect(
+            this.swap2p
+              .connect(this.tokenXHolder)
+              .createEscrow(
+                this.tokenX.address,
+                this.firstEscrowTokenXAmount,
+                this.tokenY.address,
+                this.firstEscrowTokenYAmount,
+                this.zeroAddress,
+                {
+                  value: this.swap2pFee,
+                }
+              )
+          ).to.be.revertedWith("not enough fee");
+        });
+
+        it("ok then createEscrow with new fee", async function () {
+          await this.swap2p
+            .connect(this.tokenXHolder)
+            .createEscrow(
+              this.tokenX.address,
+              this.firstEscrowTokenXAmount,
+              this.tokenY.address,
+              this.firstEscrowTokenYAmount,
+              this.zeroAddress,
+              {
+                value: this.swap2pNewFee,
+              }
+            );
+        });
+      });
+
+      it("revert then createEscrow with not enough fee", async function () {
+        await expect(
+          this.swap2p
+            .connect(this.tokenXHolder)
+            .createEscrow(
+              ZERO_ADDRESS,
+              this.firstEscrowTokenXAmount,
+              this.tokenY.address,
+              this.firstEscrowTokenYAmount,
+              this.zeroAddress,
+              {
+                value: this.swap2pFee - 1,
+              }
+            )
+        ).to.be.revertedWith("not enough fee");
+      });
+
       it("revert then createEscrow with zero tokenX address", async function () {
         await expect(
           this.swap2p
@@ -57,7 +114,10 @@ describe("Swap2p", function () {
               this.firstEscrowTokenXAmount,
               this.tokenY.address,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("x zero address");
       });
@@ -71,7 +131,10 @@ describe("Swap2p", function () {
               this.firstEscrowTokenXAmount,
               ZERO_ADDRESS,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("y zero address");
       });
@@ -85,7 +148,10 @@ describe("Swap2p", function () {
               this.firstEscrowTokenXAmount,
               ZERO_ADDRESS,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("y zero address");
       });
@@ -99,7 +165,10 @@ describe("Swap2p", function () {
               ZERO_ADDRESS,
               this.tokenY.address,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("x zero amount");
       });
@@ -113,7 +182,10 @@ describe("Swap2p", function () {
               this.firstEscrowTokenXAmount,
               this.tokenY.address,
               ZERO_ADDRESS,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("y zero amount");
       });
@@ -128,7 +200,10 @@ describe("Swap2p", function () {
               notEnoughTokenXAmount,
               this.tokenY.address,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             )
         ).to.be.revertedWith("not enought xToken");
       });
@@ -142,8 +217,15 @@ describe("Swap2p", function () {
               this.firstEscrowTokenXAmount,
               this.tokenY.address,
               this.firstEscrowTokenYAmount,
-              this.zeroAddress
+              this.zeroAddress,
+              {
+                value: this.swap2pFee,
+              }
             );
+        });
+
+        it("deployer can claimFee after first createEscrow", async function () {
+          await this.swap2p.connect(this.deployer).claimFee(this.deployer.address)
         });
 
         it("check escrow #0 exist and open", async function () {
@@ -229,10 +311,7 @@ describe("Swap2p", function () {
                 .approve(toRandomAddress, allOwnedYTokens);
               await this.tokenY
                 .connect(this.tokenYHolder)
-                .transfer(
-                  toRandomAddress,
-                  allOwnedYTokens
-                );
+                .transfer(toRandomAddress, allOwnedYTokens);
 
               await expect(
                 this.swap2p.connect(this.tokenYHolder).acceptEscrow(0)
@@ -298,7 +377,10 @@ describe("Swap2p", function () {
                     this.secondEscrowTokenXAmount,
                     this.tokenY.address,
                     this.secondEscrowTokenYAmount,
-                    this.zeroAddress
+                    this.zeroAddress,
+                    {
+                      value: this.swap2pFee,
+                    }
                   );
               });
 
@@ -337,7 +419,10 @@ describe("Swap2p", function () {
                     this.secondEscrowTokenXAmount,
                     this.tokenY.address,
                     this.secondEscrowTokenYAmount,
-                    this.randomAccount.address
+                    this.randomAccount.address,
+                    {
+                      value: this.swap2pFee,
+                    }
                   );
               });
 
