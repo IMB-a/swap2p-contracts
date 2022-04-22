@@ -1,9 +1,10 @@
-//SPDX-License-Identifier: No License (None)
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Swap2p {
+contract Swap2p is AccessControl {
     struct Escrow {
         address xOwner;
         address xTokenContractAddr;
@@ -15,6 +16,7 @@ contract Swap2p {
     }
 
     Escrow[] public escrowList;
+    uint256 public fee;
 
     mapping(address => uint256[]) public ownerTokens;
 
@@ -31,13 +33,19 @@ contract Swap2p {
     event EscrowAccepted(uint256 escrowIndex);
     event EscrowCanceled(uint256 escrowIndex);
 
+    constructor(uint256 _fee) {
+        fee = _fee;
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    }
+
     function createEscrow(
         address _xTokenContractAddr,
         uint256 _xAmount,
         address _yTokenContractAddr,
         uint256 _yAmount,
         address _yOwner
-    ) external {
+    ) external payable {
+        require(msg.value >= fee, "not enough fee");
         require(_xTokenContractAddr != address(0), "x zero address");
         require(_yTokenContractAddr != address(0), "y zero address");
         require(_xAmount > 0, "x zero amount");
@@ -114,6 +122,14 @@ contract Swap2p {
         );
 
         emit EscrowAccepted(_escrowIndex);
+    }
+
+    function setFee(uint256 _newFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        fee = _newFee;
+    }
+
+    function claimFee(address _to) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        payable(_to).transfer(address(this).balance);
     }
 
     function getEscrow(uint256 _escrowIndex)
