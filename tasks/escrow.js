@@ -9,24 +9,29 @@ task("escrow", "escrow TokenX TokenY").setAction(async (_, hre) => {
   const TokenYInstance = await ethers.getContractAt("TokenYMock", TokenY);
 
   const { tokenXDeployer, tokenYDeployer } = await getNamedAccounts();
+  value = new ethers.BigNumber.from("10").pow(18);
 
   console.log("mint TokenX for deployer");
   await (
-    await TokenXInstance.mint(tokenXDeployer, 1000, {
+    await TokenXInstance.mint(tokenXDeployer, value, {
       from: tokenXDeployer,
     })
   ).wait();
 
   console.log("mint TokenY for deployer");
   await (
-    await TokenYInstance.mint(tokenYDeployer, 1000, {
-      from: tokenYDeployer,
-    })
+    await TokenYInstance.mint(
+      tokenYDeployer,
+      value,
+      {
+        from: tokenYDeployer,
+      }
+    )
   ).wait();
 
   console.log("approve 100 TokenX for Swap2p");
   await (
-    await TokenXInstance.approve(Swap2p, 100, {
+    await TokenXInstance.approve(Swap2p, value, {
       from: tokenYDeployer,
     })
   ).wait();
@@ -35,19 +40,20 @@ task("escrow", "escrow TokenX TokenY").setAction(async (_, hre) => {
   await (
     await Swap2pInstance.createEscrow(
       TokenX,
-      100,
+      value,
       TokenY,
-      200,
+      value,
       tokenYDeployer,
       {
         from: tokenXDeployer,
+        value: 10000000000
       }
     )
   ).wait();
 
   console.log("approve 200 TokenY for Swap2p");
   await (
-    await TokenYInstance.approve(Swap2p, 200, {
+    await TokenYInstance.approve(Swap2p, value, {
       from: tokenYDeployer,
     })
   ).wait();
@@ -56,7 +62,7 @@ task("escrow", "escrow TokenX TokenY").setAction(async (_, hre) => {
   await (
     await Swap2pInstance.acceptEscrow(0, {
       from: tokenYDeployer,
-      gasLimit: 250000
+      gasLimit: 250000,
     })
   ).wait();
 });
