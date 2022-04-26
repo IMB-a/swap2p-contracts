@@ -1,10 +1,10 @@
 module.exports = async ({ deployments: { deploy } }) => {
   const { _, tokenYDeployer } = await getNamedAccounts();
 
-  await deploy("TokenYMock", {
+  await deploy("ERC20YMock", {
     from: tokenYDeployer,
     args: [],
     log: true,
   });
 };
-module.exports.tags = ["TokenY"];
+module.exports.tags = ["ERC20YMock"];

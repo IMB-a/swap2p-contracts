@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Swap2p is AccessControl {
+contract Escrow721To721 is AccessControl {
     struct Escrow {
         address xOwner;
         address xTokenContractAddr;
-        uint256 xAmount;
+        uint256 xIndex;
         address yOwner;
         address yTokenContractAddr;
-        uint256 yAmount;
+        uint256 yIndex;
         bool closed;
     }
 
@@ -23,10 +23,10 @@ contract Swap2p is AccessControl {
     event EscrowCreated(
         address xOwner,
         address xTokenContractAddr,
-        uint256 xAmount,
+        uint256 xIndex,
         address yOwner,
         address yTokenContractAddr,
-        uint256 yAmount,
+        uint256 yIndex,
         uint256 escrowIndex
     );
 
@@ -40,42 +40,43 @@ contract Swap2p is AccessControl {
 
     function createEscrow(
         address _xTokenContractAddr,
-        uint256 _xAmount,
+        uint256 _xIndex,
         address _yTokenContractAddr,
-        uint256 _yAmount,
+        uint256 _yIndex,
         address _yOwner
     ) external payable {
         require(msg.value >= fee, "not enough fee");
         require(_xTokenContractAddr != address(0), "x zero address");
         require(_yTokenContractAddr != address(0), "y zero address");
-        require(_xAmount > 0, "x zero amount");
-        require(_yAmount > 0, "y zero amount");
 
-        IERC20 xToken = IERC20(_xTokenContractAddr);
-        require(xToken.balanceOf(msg.sender) > _xAmount, "not enought xToken");
+        IERC721 xToken = IERC721(_xTokenContractAddr);
+        require(
+            xToken.ownerOf(_xIndex) == msg.sender,
+            "you don't have a token"
+        );
 
         escrowList.push(
             Escrow({
                 xOwner: msg.sender,
                 xTokenContractAddr: _xTokenContractAddr,
-                xAmount: _xAmount,
+                xIndex: _xIndex,
                 yOwner: _yOwner,
                 yTokenContractAddr: _yTokenContractAddr,
-                yAmount: _yAmount,
+                yIndex: _yIndex,
                 closed: false
             })
         );
         uint256 escrowIndex = escrowList.length - 1;
 
-        xToken.transferFrom(msg.sender, address(this), _xAmount);
+        xToken.transferFrom(msg.sender, address(this), _xIndex);
 
         emit EscrowCreated(
             msg.sender,
             _xTokenContractAddr,
-            _xAmount,
+            _xIndex,
             _yOwner,
             _yTokenContractAddr,
-            _yAmount,
+            _yIndex,
             escrowIndex
         );
     }
@@ -95,8 +96,8 @@ contract Swap2p is AccessControl {
     }
 
     function acceptEscrow(uint256 _escrowIndex) external {
-        IERC20 xToken = IERC20(escrowList[_escrowIndex].xTokenContractAddr);
-        IERC20 yToken = IERC20(escrowList[_escrowIndex].yTokenContractAddr);
+        IERC721 xToken = IERC721(escrowList[_escrowIndex].xTokenContractAddr);
+        IERC721 yToken = IERC721(escrowList[_escrowIndex].yTokenContractAddr);
         require(escrowList[_escrowIndex].closed == false, "escrow closed");
         require(
             escrowList[_escrowIndex].yOwner == address(0) ||
@@ -104,21 +105,26 @@ contract Swap2p is AccessControl {
             "escrow not for you"
         );
         require(
-            yToken.balanceOf(msg.sender) > escrowList[_escrowIndex].yAmount,
-            "not enought yToken"
+            yToken.ownerOf(escrowList[_escrowIndex].yIndex) == msg.sender,
+            "you don't have a token"
         );
 
         escrowList[_escrowIndex].closed = true;
 
-        xToken.transfer(msg.sender, escrowList[_escrowIndex].xAmount);
+        xToken.transferFrom(
+            address(this),
+            msg.sender,
+            escrowList[_escrowIndex].xIndex
+        );
         yToken.transferFrom(
             msg.sender,
             address(this),
-            escrowList[_escrowIndex].yAmount
+            escrowList[_escrowIndex].yIndex
         );
-        yToken.transfer(
+        yToken.transferFrom(
+            address(this),
             escrowList[_escrowIndex].xOwner,
-            escrowList[_escrowIndex].yAmount
+            escrowList[_escrowIndex].yIndex
         );
 
         emit EscrowAccepted(_escrowIndex, msg.sender);

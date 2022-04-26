@@ -1,12 +1,11 @@
-const { ethers } = require("hardhat");
-
 module.exports = async ({ deployments: { deploy } }) => {
   const { tokenXDeployer } = await getNamedAccounts();
+  console.log(tokenXDeployer);
 
-  await deploy("Escrow20To20", {
+  await deploy("ERC20XMock", {
     from: tokenXDeployer,
-    args: [ethers.BigNumber.from("10000000000")],
+    args: [],
     log: true,
   });
 };
-module.exports.tags = ["Escrow20To20"];
+module.exports.tags = ["ERC20XMock"];
