@@ -17,15 +17,12 @@ describe("ERC721XMock", function () {
 
   it("setDefaultUri reverts if called by wrong role", async function () {
     await expect(
-      this.erc721
-        .connect(this.provider)
-        .setDefaultUri("ipfs://ipfs/defaultUri")
+      this.erc721.connect(this.provider).setDefaultUri("ipfs://ipfs/defaultUri")
     ).to.be.reverted;
   });
 
   it("tokenURI reverts if requested URI query for nonexistent token", async function () {
-    await expect(this.erc721.connect(this.provider).tokenURI(1)).to.be
-      .reverted;
+    await expect(this.erc721.connect(this.provider).tokenURI(1)).to.be.reverted;
   });
 
   describe("grant admin role", function () {
