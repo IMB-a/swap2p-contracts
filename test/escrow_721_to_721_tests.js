@@ -26,9 +26,9 @@ describe("Escrow721To721", function () {
   });
 
   it("should be deployed", async function () {
-    expect(await this.escrow721to721.deployed(), true);
-    expect(await this.tokenX.deployed(), true);
-    expect(await this.tokenY.deployed(), true);
+    expect(await this.escrow721to721.deployed());
+    expect(await this.tokenX.deployed());
+    expect(await this.tokenY.deployed());
   });
 
   it("revert then no escrows", async function () {
@@ -199,8 +199,7 @@ describe("Escrow721To721", function () {
         });
 
         it("tokenXHolder and tokenYHolder have right balanceOf tokenX and tokenY", async function () {
-          expect(
-            await this.tokenX.ownerOf(this.firstXIndex),
+          expect(await this.tokenX.ownerOf(this.firstXIndex)).to.equal(
             this.escrow721to721.address
           );
         });
@@ -250,9 +249,7 @@ describe("Escrow721To721", function () {
 
           it("revert then createEscrow with a tokenY that is not yours", async function () {
             await expect(
-              this.escrow721to721
-              .connect(this.randomAccount)
-              .acceptEscrow(0)
+              this.escrow721to721.connect(this.randomAccount).acceptEscrow(0)
             ).to.be.revertedWith("you don't have a token");
           });
 
@@ -273,12 +270,10 @@ describe("Escrow721To721", function () {
               });
 
               it("tokenXHolder and tokenYHolder have right balanceOf tokenX and tokenY", async function () {
-                expect(
-                  await this.tokenX.ownerOf(this.firstXIndex),
+                expect(await this.tokenX.ownerOf(this.firstXIndex)).to.equal(
                   this.tokenYHolder.address
                 );
-                expect(
-                  await this.tokenX.ownerOf(this.firstYIndex),
+                expect(await this.tokenY.ownerOf(this.firstYIndex)).to.equal(
                   this.tokenXHolder.address
                 );
               });
@@ -313,7 +308,7 @@ describe("Escrow721To721", function () {
                 await this.tokenX
                   .connect(this.tokenXHolder)
                   .approve(this.escrow721to721.address, this.thirdIndex);
-                
+
                 await this.escrow721to721
                   .connect(this.tokenXHolder)
                   .createEscrow(
@@ -331,10 +326,7 @@ describe("Escrow721To721", function () {
               it("tokenXHolder and tokenYHolder have right balanceOf tokenX and tokenY", async function () {
                 await this.tokenY
                   .connect(this.tokenYHolder)
-                  .approve(
-                    this.escrow721to721.address,
-                    this.firstYIndex
-                  );
+                  .approve(this.escrow721to721.address, this.firstYIndex);
                 expect(
                   await this.escrow721to721
                     .connect(this.tokenYHolder)
@@ -393,10 +385,7 @@ describe("Escrow721To721", function () {
               it("revert then yOwner trying to accept escrow not for itself", async function () {
                 await this.tokenY
                   .connect(this.tokenYHolder)
-                  .approve(
-                    this.escrow721to721.address,
-                    this.firstYIndex
-                  );
+                  .approve(this.escrow721to721.address, this.firstYIndex);
                 await expect(
                   this.escrow721to721.connect(this.tokenYHolder).acceptEscrow(1)
                 ).to.be.revertedWith("escrow not for you");

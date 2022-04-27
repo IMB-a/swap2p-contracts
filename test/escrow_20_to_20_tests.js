@@ -24,9 +24,9 @@ describe("Escrow20To20", function () {
   });
 
   it("should be deployed", async function () {
-    expect(await this.escrow20to20.deployed(), true);
-    expect(await this.tokenX.deployed(), true);
-    expect(await this.tokenY.deployed(), true);
+    expect(await this.escrow20to20.deployed());
+    expect(await this.tokenX.deployed());
+    expect(await this.tokenY.deployed());
   });
 
   it("revert then no escrows", async function () {
@@ -233,15 +233,17 @@ describe("Escrow20To20", function () {
 
         it("tokenXHolder and tokenYHolder have right balanceOf tokenX and tokenY", async function () {
           expect(
-            await this.tokenX.balanceOf(this.tokenXHolder.address),
-            this.mintedXTokens
-          );
-          expect(await this.tokenX.balanceOf(this.tokenYHolder.address), 0);
+            await this.tokenX.balanceOf(this.tokenXHolder.address)
+          ).to.equal(this.mintedXTokens - this.firstEscrowTokenXAmount);
           expect(
-            await this.tokenY.balanceOf(this.tokenYHolder.address),
-            this.mintedYTokens
-          );
-          expect(await this.tokenY.balanceOf(this.tokenXHolder.address), 0);
+            await this.tokenX.balanceOf(this.tokenYHolder.address)
+          ).to.equal(0);
+          expect(
+            await this.tokenY.balanceOf(this.tokenYHolder.address)
+          ).to.equal(0);
+          expect(
+            await this.tokenY.balanceOf(this.tokenXHolder.address)
+          ).to.equal(0);
         });
 
         it("check non author can't cancel escrow #0", async function () {
@@ -325,21 +327,17 @@ describe("Escrow20To20", function () {
 
               it("tokenXHolder and tokenYHolder have right balanceOf tokenX and tokenY", async function () {
                 expect(
-                  await this.tokenX.balanceOf(this.tokenXHolder.address),
-                  this.mintedXTokens - this.firstEscrowTokenXAmount
-                );
+                  await this.tokenX.balanceOf(this.tokenXHolder.address)
+                ).to.equal(this.mintedXTokens - this.firstEscrowTokenXAmount);
                 expect(
-                  await this.tokenX.balanceOf(this.tokenYHolder.address),
-                  this.firstEscrowTokenXAmount
-                );
+                  await this.tokenX.balanceOf(this.tokenYHolder.address)
+                ).to.equal(this.firstEscrowTokenXAmount);
                 expect(
-                  await this.tokenY.balanceOf(this.tokenYHolder.address),
-                  this.mintedYTokens - this.firstEscrowTokenYAmount
-                );
+                  await this.tokenY.balanceOf(this.tokenYHolder.address)
+                ).to.equal(this.mintedYTokens - this.firstEscrowTokenYAmount);
                 expect(
-                  await this.tokenY.balanceOf(this.tokenXHolder.address),
-                  this.firstEscrowTokenYAmount
-                );
+                  await this.tokenY.balanceOf(this.tokenXHolder.address)
+                ).to.equal(this.firstEscrowTokenYAmount);
               });
 
               it("check escrow #0 exist and closed", async function () {
