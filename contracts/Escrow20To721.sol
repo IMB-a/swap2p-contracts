@@ -24,7 +24,7 @@ contract Escrow20To721 is AccessControl {
     event EscrowCreated(
         address xOwner,
         address xTokenContractAddr,
-        uint256 xIndex,
+        uint256 xAmount,
         address yOwner,
         address yTokenContractAddr,
         uint256 yIndex,
