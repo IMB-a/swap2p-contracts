@@ -1,9 +1,11 @@
-const TokenX = "";
-const TokenY = "";
-const Swap2p = "";
+const SWAP2P = "0x57a5AC17906491be6609cEE8EAB5730F67790717";
+const ERC20X = "";
+const ERC721Y = "";
+const ESCROW20TO721 = "";
 
 module.exports = {
-  TokenX,
-  TokenY,
-  Swap2p,
+  SWAP2P,
+  ERC20X,
+  ERC721Y,
+  ESCROW20TO721,
 };

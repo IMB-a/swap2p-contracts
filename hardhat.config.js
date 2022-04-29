@@ -4,7 +4,7 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-deploy");
 require("solidity-coverage");
 
-require("./tasks/escrow.js");
+require("./tasks/escrow20to721.js");
 
 const accounts = {
   mnemonic: `${process.env.MNEMONIC}`,
@@ -36,7 +36,7 @@ module.exports = {
       live: true,
       saveDeployments: true,
       tags: ["staging"],
-      gasPrice: 8000000000,
+      gasPrice: 15000000000,
     },
   },
   etherscan: {

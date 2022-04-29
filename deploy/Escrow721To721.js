@@ -1,12 +1,13 @@
 const { ethers } = require("hardhat");
 
 module.exports = async ({ deployments: { deploy } }) => {
+  const { SWAP2P } = require("../constants");
   const { tokenXDeployer } = await getNamedAccounts();
 
   await deploy("Escrow721To721", {
     from: tokenXDeployer,
-    args: [ethers.BigNumber.from("10000000000")],
+    args: [SWAP2P, ethers.BigNumber.from("10000000000")],
     log: true,
   });
 };
-module.exports.tags = ["Escrow20To20"];
+module.exports.tags = ["Escrow721To721"];
