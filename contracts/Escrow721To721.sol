@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
@@ -16,9 +17,8 @@ contract Escrow721To721 is AccessControl {
     }
 
     Escrow[] public escrowList;
+    address public sppAddress;
     uint256 public fee;
-
-    mapping(address => uint256[]) public ownerTokens;
 
     event EscrowCreated(
         address xOwner,
@@ -33,7 +33,8 @@ contract Escrow721To721 is AccessControl {
     event EscrowAccepted(uint256 escrowIndex, address yOwner);
     event EscrowCanceled(uint256 escrowIndex);
 
-    constructor(uint256 _fee) {
+    constructor(address _sppAddress, uint256 _fee) {
+        sppAddress = _sppAddress;
         fee = _fee;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
@@ -44,10 +45,12 @@ contract Escrow721To721 is AccessControl {
         address _yTokenContractAddr,
         uint256 _yIndex,
         address _yOwner
-    ) external payable {
-        require(msg.value >= fee, "not enough fee");
+    ) external {
         require(_xTokenContractAddr != address(0), "x zero address");
         require(_yTokenContractAddr != address(0), "y zero address");
+
+        IERC20 spp = IERC20(sppAddress);
+        require(spp.balanceOf(msg.sender) >= fee, "not enough SPP");
 
         IERC721 xToken = IERC721(_xTokenContractAddr);
         require(
@@ -69,6 +72,7 @@ contract Escrow721To721 is AccessControl {
         uint256 escrowIndex = escrowList.length - 1;
 
         xToken.transferFrom(msg.sender, address(this), _xIndex);
+        spp.transferFrom(msg.sender, address(this), fee);
 
         emit EscrowCreated(
             msg.sender,

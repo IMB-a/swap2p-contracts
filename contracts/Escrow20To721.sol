@@ -17,9 +17,8 @@ contract Escrow20To721 is AccessControl {
     }
 
     Escrow[] public escrowList;
+    address public sppAddress;
     uint256 public fee;
-
-    mapping(address => uint256[]) public ownerTokens;
 
     event EscrowCreated(
         address xOwner,
@@ -34,7 +33,8 @@ contract Escrow20To721 is AccessControl {
     event EscrowAccepted(uint256 escrowIndex, address yOwner);
     event EscrowCanceled(uint256 escrowIndex);
 
-    constructor(uint256 _fee) {
+    constructor(address _sppAddress, uint256 _fee) {
+        sppAddress = _sppAddress;
         fee = _fee;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
@@ -45,14 +45,26 @@ contract Escrow20To721 is AccessControl {
         address _yTokenContractAddr,
         uint256 _yIndex,
         address _yOwner
-    ) external payable {
-        require(msg.value >= fee, "not enough fee");
+    ) external {
         require(_xTokenContractAddr != address(0), "x zero address");
         require(_yTokenContractAddr != address(0), "y zero address");
         require(_xAmount > 0, "x zero amount");
 
+        IERC20 spp = IERC20(sppAddress);
+        require(spp.balanceOf(msg.sender) >= fee, "not enough SPP");
+
         IERC20 xToken = IERC20(_xTokenContractAddr);
-        require(xToken.balanceOf(msg.sender) > _xAmount, "not enought xToken");
+        if (_xTokenContractAddr == sppAddress) {
+            require(
+                xToken.balanceOf(msg.sender) > _xAmount + fee,
+                "not enough SPP"
+            );
+        } else {
+            require(
+                xToken.balanceOf(msg.sender) > _xAmount,
+                "not enough xToken"
+            );
+        }
 
         escrowList.push(
             Escrow({
@@ -68,6 +80,7 @@ contract Escrow20To721 is AccessControl {
         uint256 escrowIndex = escrowList.length - 1;
 
         xToken.transferFrom(msg.sender, address(this), _xAmount);
+        spp.transferFrom(msg.sender, address(this), fee);
 
         emit EscrowCreated(
             msg.sender,
