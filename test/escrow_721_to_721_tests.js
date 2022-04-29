@@ -9,6 +9,7 @@ describe("Escrow721To721", function () {
     this.tokenYHolder = accounts[2];
     this.randomAccount = accounts[3];
 
+    this.Swap2pArtifact = await ethers.getContractFactory("Swap2p");
     this.Escrow721To721Artifact = await ethers.getContractFactory(
       "Escrow721To721"
     );
@@ -17,8 +18,10 @@ describe("Escrow721To721", function () {
   });
 
   beforeEach(async function () {
+    this.swap2p = await this.Swap2pArtifact.deploy();
     this.escrow721to721Fee = ethers.BigNumber.from(1);
     this.escrow721to721 = await this.Escrow721To721Artifact.deploy(
+      this.swap2p.address,
       this.escrow721to721Fee
     );
     this.tokenX = await this.tokenXArtifact.deploy();
@@ -41,6 +44,9 @@ describe("Escrow721To721", function () {
     beforeEach(async function () {
       await this.tokenX.connect(this.deployer).mint(this.tokenXHolder.address);
       await this.tokenX.connect(this.deployer).mint(this.randomAccount.address);
+      await this.swap2p
+        .connect(this.deployer)
+        .mint(this.tokenXHolder.address, this.escrow721to721Fee);
     });
 
     describe("approve tokenX for escrow721to721", function () {
@@ -51,6 +57,52 @@ describe("Escrow721To721", function () {
         await this.tokenX
           .connect(this.tokenXHolder)
           .approve(this.escrow721to721.address, this.firstXIndex);
+        await this.swap2p
+          .connect(this.tokenXHolder)
+          .approve(this.escrow721to721.address, this.escrow721to721Fee);
+      });
+
+      it("revert then createEscrow with a tokenX that is not yours", async function () {
+        const secondTokenIndex = 1;
+        await expect(
+          this.escrow721to721
+            .connect(this.tokenXHolder)
+            .createEscrow(
+              this.tokenX.address,
+              secondTokenIndex,
+              this.tokenY.address,
+              this.firstYIndex,
+              this.zeroAddress
+            )
+        ).to.be.revertedWith("you don't have a token");
+      });
+
+      it("revert then createEscrow with zero tokenX address", async function () {
+        await expect(
+          this.escrow721to721
+            .connect(this.tokenXHolder)
+            .createEscrow(
+              ZERO_ADDRESS,
+              this.firstXIndex,
+              this.tokenY.address,
+              this.firstYIndex,
+              this.zeroAddress
+            )
+        ).to.be.revertedWith("x zero address");
+      });
+
+      it("revert then createEscrow with zero tokenY address", async function () {
+        await expect(
+          this.escrow721to721
+            .connect(this.tokenXHolder)
+            .createEscrow(
+              this.tokenX.address,
+              this.firstXIndex,
+              ZERO_ADDRESS,
+              this.firstYIndex,
+              this.zeroAddress
+            )
+        ).to.be.revertedWith("y zero address");
       });
 
       describe("change fee", function () {
@@ -72,97 +124,10 @@ describe("Escrow721To721", function () {
                 this.firstXIndex,
                 this.tokenY.address,
                 this.firstYIndex,
-                this.zeroAddress,
-                {
-                  value: this.escrow721to721Fee,
-                }
+                this.zeroAddress
               )
-          ).to.be.revertedWith("not enough fee");
+          ).to.be.revertedWith("not enough SPP");
         });
-
-        it("ok then createEscrow with new fee", async function () {
-          await this.escrow721to721
-            .connect(this.tokenXHolder)
-            .createEscrow(
-              this.tokenX.address,
-              this.firstXIndex,
-              this.tokenY.address,
-              this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721NewFee,
-              }
-            );
-        });
-      });
-
-      it("revert then createEscrow with not enough fee", async function () {
-        await expect(
-          this.escrow721to721
-            .connect(this.tokenXHolder)
-            .createEscrow(
-              ZERO_ADDRESS,
-              this.firstXIndex,
-              this.tokenY.address,
-              this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721Fee - 1,
-              }
-            )
-        ).to.be.revertedWith("not enough fee");
-      });
-
-      it("revert then createEscrow with a tokenX that is not yours", async function () {
-        const secondTokenIndex = 1;
-        await expect(
-          this.escrow721to721
-            .connect(this.tokenXHolder)
-            .createEscrow(
-              this.tokenX.address,
-              secondTokenIndex,
-              this.tokenY.address,
-              this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721Fee,
-              }
-            )
-        ).to.be.revertedWith("you don't have a token");
-      });
-
-      it("revert then createEscrow with zero tokenX address", async function () {
-        await expect(
-          this.escrow721to721
-            .connect(this.tokenXHolder)
-            .createEscrow(
-              ZERO_ADDRESS,
-              this.firstXIndex,
-              this.tokenY.address,
-              this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721Fee,
-              }
-            )
-        ).to.be.revertedWith("x zero address");
-      });
-
-      it("revert then createEscrow with zero tokenY address", async function () {
-        await expect(
-          this.escrow721to721
-            .connect(this.tokenXHolder)
-            .createEscrow(
-              this.tokenX.address,
-              this.firstXIndex,
-              ZERO_ADDRESS,
-              this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721Fee,
-              }
-            )
-        ).to.be.revertedWith("y zero address");
       });
 
       describe("approve tokenX create #0 escrow", function () {
@@ -174,10 +139,7 @@ describe("Escrow721To721", function () {
               this.firstXIndex,
               this.tokenY.address,
               this.firstYIndex,
-              this.zeroAddress,
-              {
-                value: this.escrow721to721Fee,
-              }
+              this.zeroAddress
             );
         });
 
@@ -304,11 +266,15 @@ describe("Escrow721To721", function () {
                 await this.tokenX
                   .connect(this.deployer)
                   .mint(this.tokenXHolder.address);
-
                 await this.tokenX
                   .connect(this.tokenXHolder)
                   .approve(this.escrow721to721.address, this.thirdIndex);
-
+                await this.swap2p
+                  .connect(this.deployer)
+                  .mint(this.tokenXHolder.address, this.escrow721to721Fee);
+                await this.swap2p
+                  .connect(this.tokenXHolder)
+                  .approve(this.escrow721to721.address, this.escrow721to721Fee);
                 await this.escrow721to721
                   .connect(this.tokenXHolder)
                   .createEscrow(
@@ -316,10 +282,7 @@ describe("Escrow721To721", function () {
                     this.thirdIndex,
                     this.tokenY.address,
                     this.firstYIndex,
-                    this.zeroAddress,
-                    {
-                      value: this.escrow721to721Fee,
-                    }
+                    this.zeroAddress
                   );
               });
 
@@ -352,11 +315,15 @@ describe("Escrow721To721", function () {
                 await this.tokenX
                   .connect(this.deployer)
                   .mint(this.tokenXHolder.address);
-
                 await this.tokenX
                   .connect(this.tokenXHolder)
                   .approve(this.escrow721to721.address, this.thirdIndex);
-
+                await this.swap2p
+                  .connect(this.deployer)
+                  .mint(this.tokenXHolder.address, this.escrow721to721Fee);
+                await this.swap2p
+                  .connect(this.tokenXHolder)
+                  .approve(this.escrow721to721.address, this.escrow721to721Fee);
                 await this.escrow721to721
                   .connect(this.tokenXHolder)
                   .createEscrow(
@@ -364,10 +331,7 @@ describe("Escrow721To721", function () {
                     this.thirdIndex,
                     this.tokenY.address,
                     this.firstYIndex,
-                    this.randomAccount.address,
-                    {
-                      value: this.escrow721to721Fee,
-                    }
+                    this.randomAccount.address
                   );
               });
 
