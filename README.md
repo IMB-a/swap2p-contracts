@@ -13,7 +13,23 @@ npm install
 
 ## Deploy
 ```bash
-npm run-script deploy:rinkeby
+npx hardhat deploy --network rinkeby --tags Swap2p --reset
+```
+fill swap2p contract address in `constants.js`
+```js
+const SWAP2P = "";
+```
+After that deploy other contracts
+
+```bash
+npx hardhat deploy --network rinkeby --tags ERC20XMock
+npx hardhat deploy --network rinkeby --tags ERC20YMock
+npx hardhat deploy --network rinkeby --tags ERC721XMock
+npx hardhat deploy --network rinkeby --tags ERC721YMock
+npx hardhat deploy --network rinkeby --tags Escrow20To20
+npx hardhat deploy --network rinkeby --tags Escrow721To20
+npx hardhat deploy --network rinkeby --tags Escrow20To721
+npx hardhat deploy --network rinkeby --tags Escrow721To721
 ```
 
 ## Verify
@@ -27,7 +43,14 @@ npm run-script test
 npm run-script coverage
 ```
 
-# Using example
+## Using example
+after deploy all contract fill contract addresses in `constants.js`
+```js
+const ERC20X = "";
+const ERC721Y = "";
+const ESCROW20TO721 = "";
+```
+After that run task
 ```bash
-npx hardhat escrow --network rinkeby
+npx hardhat escrow20to721 --network rinkeby
 ```
